@@ -39,6 +39,7 @@ Thumbs.db
 # (keep static frontend assets in public/, but ignore big local images)
 # =========================
 photos/
+thumbs/
 models/
 public/photos/
 public/thumbs/

@@ -1,4 +1,4 @@
-﻿import type { DemoPoint } from "./types";
+import type { DemoPoint } from "./types";
 
 type OverlayProxyLike = {
   location: (x: number, y: number) => { x: number; y: number };
@@ -30,7 +30,7 @@ export class AtlasOverlay {
     const unitX = props.proxy.location(1, 0);
     const unitY = props.proxy.location(0, 1);
     const pxPerUnit = (Math.abs(unitX.x - origin.x) + Math.abs(unitY.y - origin.y)) / 2;
-    const baseSizeRaw = Math.max(12, Math.min(56, 8 + pxPerUnit * 0.14));
+    const baseSizeRaw = Math.max(24, Math.min(112, (8 + pxPerUnit * 0.14) * 2));
     const zoomBoost = 1 + Math.max(0, Math.log2(Math.max(1, pxPerUnit / 90))) * 0.65;
     const baseSize = Math.max(12, Math.min(140, baseSizeRaw * zoomBoost));
     this.currentSize = baseSize;
