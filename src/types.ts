@@ -4,4 +4,5 @@ export type DemoPoint = {
   y: number;
   label: string;
   thumb: string;
+  full: string;
 };

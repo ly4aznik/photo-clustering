@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { EmbeddingView } from "embedding-atlas/react";
 import { AtlasTooltip } from "./AtlasTooltip";
 import { AtlasOverlay } from "./AtlasOverlay";
@@ -17,7 +17,6 @@ type ViewportStateLike = {
   scale: number;
 };
 
-const FULL_PHOTO_EXTENSIONS = ["JPG", "jpg", "JPEG", "jpeg", "PNG", "png", "WEBP", "webp"] as const;
 
 function App() {
   const [enabledLabels, setEnabledLabels] = useState<Record<string, boolean>>(() =>
@@ -148,42 +147,7 @@ function App() {
   }, [selection, byId, visiblePoints]);
 
   const selectedId = selectedPoint?.id ?? null;
-  const [selectedFullPhoto, setSelectedFullPhoto] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const resolveFullPhoto = async () => {
-      if (!selectedPoint) {
-        setSelectedFullPhoto(null);
-        return;
-      }
-
-      for (const ext of FULL_PHOTO_EXTENSIONS) {
-        const candidate = `/photos/${selectedPoint.id}.${ext}`;
-        try {
-          const response = await fetch(candidate, { method: "HEAD" });
-          if (response.ok) {
-            if (!cancelled) {
-              setSelectedFullPhoto(candidate);
-            }
-            return;
-          }
-        } catch {
-          // Ignore and try next extension.
-        }
-      }
-
-      if (!cancelled) {
-        setSelectedFullPhoto(selectedPoint.thumb);
-      }
-    };
-
-    void resolveFullPhoto();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedPoint]);
 
   return (
     <div className="page">
@@ -223,7 +187,7 @@ function App() {
 
           <section>
             <h2>Hover</h2>
-            <p>Наведите курсор на точку, чтобы увидеть миниатюру.</p>
+            <p>Hover a point to preview its thumbnail.</p>
           </section>
         </aside>
 
@@ -258,8 +222,8 @@ function App() {
           <h2>Selected</h2>
           {selectedPoint ? (
             <div className="card">
-              <a href={selectedFullPhoto ?? selectedPoint.thumb} target="_blank" rel="noreferrer">
-                <img src={selectedFullPhoto ?? selectedPoint.thumb} alt={selectedPoint.id} className="large-thumb" />
+              <a href={selectedPoint.full} target="_blank" rel="noreferrer">
+                <img src={selectedPoint.full} alt={selectedPoint.id} className="large-thumb" />
               </a>
               <div>id: {selectedPoint.id}</div>
               <div>label: {selectedPoint.label}</div>
@@ -268,7 +232,7 @@ function App() {
               </div>
             </div>
           ) : (
-            <p>Кликните по точке, чтобы зафиксировать выбор.</p>
+            <p>Click a point to pin the selection.</p>
           )}
         </aside>
       </div>
