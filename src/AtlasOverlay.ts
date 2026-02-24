@@ -25,6 +25,38 @@ export class AtlasOverlay {
     this.update(props);
   }
 
+  private pointKey(point: DemoPoint) {
+    return `${point.id}|${point.x}|${point.y}|${point.thumb}`;
+  }
+
+  private fallbackThumb(point: DemoPoint) {
+    return `/thumbs/${point.id}.jpg`;
+  }
+
+  private bindImageSource(node: HTMLImageElement, point: DemoPoint) {
+    const primary = point.thumb;
+    const secondary = this.fallbackThumb(point);
+    const tertiary = point.full;
+
+    node.dataset.fallbackStep = "0";
+    node.onerror = () => {
+      const step = Number(node.dataset.fallbackStep ?? "0");
+      if (step === 0 && secondary !== primary) {
+        node.dataset.fallbackStep = "1";
+        node.src = secondary;
+        return;
+      }
+      if (step <= 1 && tertiary && tertiary !== secondary) {
+        node.dataset.fallbackStep = "2";
+        node.src = tertiary;
+        return;
+      }
+      node.onerror = null;
+    };
+
+    node.src = primary;
+  }
+
   update(props: OverlayProps) {
     const origin = props.proxy.location(0, 0);
     const unitX = props.proxy.location(1, 0);
@@ -35,7 +67,7 @@ export class AtlasOverlay {
     const baseSize = Math.max(12, Math.min(140, baseSizeRaw * zoomBoost));
     this.currentSize = baseSize;
 
-    const nextIds = new Set(props.points.map((p) => p.id));
+    const nextIds = new Set(props.points.map((p) => this.pointKey(p)));
 
     for (const [id, node] of this.nodeMap.entries()) {
       if (!nextIds.has(id)) {
@@ -45,14 +77,15 @@ export class AtlasOverlay {
     }
 
     for (const point of props.points) {
-      let node = this.nodeMap.get(point.id);
+      const key = this.pointKey(point);
+      let node = this.nodeMap.get(key);
       if (!node) {
         node = document.createElement("img");
         node.className = "atlas-point-thumb";
         node.alt = point.id;
-        node.src = point.thumb;
+        this.bindImageSource(node, point);
         this.root.appendChild(node);
-        this.nodeMap.set(point.id, node);
+        this.nodeMap.set(key, node);
       }
 
       const p = props.proxy.location(point.x, point.y);

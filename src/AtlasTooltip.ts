@@ -49,7 +49,26 @@ export class AtlasTooltip {
     }
 
     this.root.style.display = "flex";
-    this.image.src = point.thumb;
+    const primary = point.thumb;
+    const secondary = `/thumbs/${point.id}.jpg`;
+    const tertiary = point.full;
+
+    this.image.dataset.fallbackStep = "0";
+    this.image.onerror = () => {
+      const step = Number(this.image.dataset.fallbackStep ?? "0");
+      if (step === 0 && secondary !== primary) {
+        this.image.dataset.fallbackStep = "1";
+        this.image.src = secondary;
+        return;
+      }
+      if (step <= 1 && tertiary && tertiary !== secondary) {
+        this.image.dataset.fallbackStep = "2";
+        this.image.src = tertiary;
+        return;
+      }
+      this.image.onerror = null;
+    };
+    this.image.src = primary;
     this.idLine.textContent = `id: ${point.id}`;
     this.labelLine.textContent = `label: ${point.label}`;
   }
